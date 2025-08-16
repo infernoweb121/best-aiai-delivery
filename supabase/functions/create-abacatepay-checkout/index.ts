@@ -87,6 +87,7 @@ serve(async (req) => {
     const abacatePayData = {
       amount: totalAmount,
       description: description,
+      frequency: 'ONE_TIME',
       methods: ['PIX', 'CARD'],
       customer: customer ? {
         name: customer.name,
