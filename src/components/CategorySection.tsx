@@ -65,7 +65,7 @@ const CategorySection = ({ categories, selectedCategory, onSelectCategory }: Cat
             onClick={() => onSelectCategory(category.id)}
             className={`flex-shrink-0 p-4 rounded-xl transition-all duration-300 min-w-[140px] ${
               selectedCategory === category.id
-                ? 'bg-gradient-primary text-primary-foreground shadow-primary scale-105'
+                ? 'gradient-primary text-primary-foreground shadow-primary scale-105'
                 : 'bg-card hover:bg-muted/50 text-card-foreground hover:scale-102'
             }`}
           >

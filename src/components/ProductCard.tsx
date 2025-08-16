@@ -113,7 +113,7 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
             className={`${
               product.isPromo 
                 ? 'bg-accent-foreground text-accent hover:bg-accent-foreground/90' 
-                : 'bg-gradient-primary hover:opacity-90 text-primary-foreground'
+                : 'gradient-primary hover:opacity-90 text-primary-foreground'
             } rounded-full transition-bounce`}
             size="icon"
           >

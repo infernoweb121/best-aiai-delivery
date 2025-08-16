@@ -41,7 +41,7 @@ const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: CartProps) 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button className="fixed bottom-6 right-6 z-50 bg-gradient-primary hover:opacity-90 text-primary-foreground shadow-primary rounded-full p-4 h-auto min-w-[60px]">
+        <Button className="fixed bottom-6 right-6 z-50 gradient-primary hover:opacity-90 text-primary-foreground shadow-primary rounded-full p-4 h-auto min-w-[60px] min-h-[60px]">
           <div className="flex items-center gap-2">
             <div className="relative">
               <ShoppingCart className="w-6 h-6" />
@@ -161,7 +161,7 @@ const Cart = ({ items, onUpdateQuantity, onRemoveItem, onCheckout }: CartProps) 
                 </div>
                 
                 <Button 
-                  className="w-full bg-gradient-accent hover:opacity-90 text-accent-foreground font-semibold py-3 text-lg rounded-xl transition-smooth"
+                  className="w-full gradient-accent hover:opacity-90 text-accent-foreground font-semibold py-3 text-lg rounded-xl transition-smooth"
                   onClick={handleCheckout}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />

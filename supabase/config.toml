@@ -1,1 +1,4 @@
 project_id = "ilgkvfayuyxnruugkbnv"
+
+[functions.create-abacatepay-checkout]
+verify_jwt = false

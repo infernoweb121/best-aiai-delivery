@@ -8,6 +8,7 @@ import ProductCard, { Product } from "@/components/ProductCard";
 import Cart from "@/components/Cart";
 import CategorySection, { Category } from "@/components/CategorySection";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Importando as imagens
 import heroAcai from "@/assets/hero-acai.jpg";
@@ -175,12 +176,45 @@ const Index = () => {
     setCartItems(prev => prev.filter(item => item.id !== productId));
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) return;
+
     toast({
-      title: "Redirecionando para pagamento...",
-      description: "Você será direcionado para finalizar seu pedido",
+      title: "Processando pedido...",
+      description: "Redirecionando para o pagamento",
     });
-    // Aqui seria implementado o redirecionamento para página de pagamento
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-abacatepay-checkout', {
+        body: {
+          items: cartItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            unit_amount: Math.round(item.price * 100), // Converter para centavos
+            currency: 'BRL'
+          })),
+          success_url: `${window.location.origin}/pagamento/sucesso`,
+          cancel_url: `${window.location.origin}/pagamento/cancelado`
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.checkoutUrl) {
+        window.open(data.checkoutUrl, '_blank');
+      } else {
+        throw new Error('URL de checkout não retornada');
+      }
+    } catch (error) {
+      console.error('Erro no checkout:', error);
+      toast({
+        title: "Erro no checkout",
+        description: "Ocorreu um erro ao processar o pagamento. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -192,7 +226,7 @@ const Index = () => {
       
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-gradient-hero text-primary-foreground shadow-primary">
+        <header className="sticky top-0 z-40 gradient-hero text-primary-foreground shadow-primary">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -222,7 +256,7 @@ const Index = () => {
 
         {/* Hero Section */}
         <section className="relative py-16 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-hero opacity-10"></div>
+          <div className="absolute inset-0 gradient-hero opacity-10"></div>
           <div className="container mx-auto px-4 text-center relative z-10">
             <div className="max-w-3xl mx-auto space-y-6">
               <h2 className="text-4xl md:text-6xl font-bold gradient-hero bg-clip-text text-transparent animate-fade-in">
@@ -261,7 +295,7 @@ const Index = () => {
         {selectedCategory === "all" || selectedCategory === "promocoes" ? (
           <section className="py-8">
             <div className="container mx-auto px-4">
-              <div className="bg-gradient-accent rounded-2xl p-6 text-accent-foreground mb-8 shadow-accent">
+              <div className="gradient-accent rounded-2xl p-6 text-accent-foreground mb-8 shadow-accent">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
                     <h3 className="text-2xl font-bold">🔥 Promoções Especiais</h3>
@@ -320,7 +354,7 @@ const Index = () => {
                     setSelectedCategory("all");
                     setSearchTerm("");
                   }}
-                  className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
+                  className="gradient-primary hover:opacity-90 text-primary-foreground"
                 >
                   Ver todos os produtos
                 </Button>
