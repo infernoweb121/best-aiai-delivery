@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Clock, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import LocationModal from "@/components/LocationModal";
+import CustomerInfoModal from "@/components/CustomerInfoModal";
 import ProductCard, { Product } from "@/components/ProductCard";
 import Cart from "@/components/Cart";
 import CategorySection, { Category } from "@/components/CategorySection";
@@ -17,9 +18,11 @@ import tropicalDrinks from "@/assets/tropical-drinks.jpg";
 
 const Index = () => {
   const [showLocationModal, setShowLocationModal] = useState(true);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const { toast } = useToast();
 
   const categories: Category[] = [
@@ -139,6 +142,29 @@ const Index = () => {
     }
   ];
 
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('bestacai-cart');
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setCartItems(parsedCart);
+      } catch (error) {
+        console.error('Erro ao carregar carrinho:', error);
+        localStorage.removeItem('bestacai-cart');
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      localStorage.setItem('bestacai-cart', JSON.stringify(cartItems));
+    } else {
+      localStorage.removeItem('bestacai-cart');
+    }
+  }, [cartItems]);
+
   const filteredProducts = allProducts.filter(product => {
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -176,25 +202,24 @@ const Index = () => {
     setCartItems(prev => prev.filter(item => item.id !== productId));
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (cartItems.length === 0) return;
+    setShowCustomerModal(true);
+  };
 
-    toast({
-      title: "Processando pedido...",
-      description: "Redirecionando para o pagamento",
-    });
-
+  const processCheckout = async (customerInfo: any) => {
+    setIsCheckoutLoading(true);
+    
     try {
       const { data, error } = await supabase.functions.invoke('create-abacatepay-checkout', {
         body: {
           items: cartItems.map(item => ({
+            product_id: item.id,
             name: item.name,
             quantity: item.quantity,
             unit_amount: Math.round(item.price * 100), // Converter para centavos
-            currency: 'BRL'
           })),
-          success_url: `${window.location.origin}/pagamento/sucesso`,
-          cancel_url: `${window.location.origin}/pagamento/cancelado`
+          customer: customerInfo
         }
       });
 
@@ -203,6 +228,16 @@ const Index = () => {
       }
 
       if (data?.checkoutUrl) {
+        // Clear cart after successful checkout creation
+        setCartItems([]);
+        setShowCustomerModal(false);
+        
+        toast({
+          title: "Redirecionando para pagamento",
+          description: "Você será direcionado para completar o pagamento",
+        });
+        
+        // Open checkout URL
         window.open(data.checkoutUrl, '_blank');
       } else {
         throw new Error('URL de checkout não retornada');
@@ -214,6 +249,8 @@ const Index = () => {
         description: "Ocorreu um erro ao processar o pagamento. Tente novamente.",
         variant: "destructive"
       });
+    } finally {
+      setIsCheckoutLoading(false);
     }
   };
 
@@ -222,6 +259,13 @@ const Index = () => {
       <LocationModal 
         isOpen={showLocationModal} 
         onClose={() => setShowLocationModal(false)} 
+      />
+      
+      <CustomerInfoModal
+        isOpen={showCustomerModal}
+        onClose={() => setShowCustomerModal(false)}
+        onConfirm={processCheckout}
+        isLoading={isCheckoutLoading}
       />
       
       <div className="min-h-screen bg-background">

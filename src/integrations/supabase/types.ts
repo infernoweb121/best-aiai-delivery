@@ -14,7 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      order_items: {
+        Row: {
+          id: string
+          name: string
+          order_id: string
+          product_id: string | null
+          quantity: number
+          total_amount: number | null
+          unit_amount: number
+        }
+        Insert: {
+          id?: string
+          name: string
+          order_id: string
+          product_id?: string | null
+          quantity?: number
+          total_amount?: number | null
+          unit_amount: number
+        }
+        Update: {
+          id?: string
+          name?: string
+          order_id?: string
+          product_id?: string | null
+          quantity?: number
+          total_amount?: number | null
+          unit_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          abacatepay_id: string | null
+          abacatepay_url: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          dev_mode: boolean | null
+          fee: number | null
+          id: string
+          metadata: Json | null
+          paid_amount: number | null
+          payment_method: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          abacatepay_id?: string | null
+          abacatepay_url?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dev_mode?: boolean | null
+          fee?: number | null
+          id?: string
+          metadata?: Json | null
+          paid_amount?: number | null
+          payment_method?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          abacatepay_id?: string | null
+          abacatepay_url?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          dev_mode?: boolean | null
+          fee?: number | null
+          id?: string
+          metadata?: Json | null
+          paid_amount?: number | null
+          payment_method?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
