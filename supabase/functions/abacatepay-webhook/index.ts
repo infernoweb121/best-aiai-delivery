@@ -15,6 +15,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== Webhook AbacatePay recebido ===');
     const webhookSecret = new URL(req.url).searchParams.get('webhookSecret');
     const expectedSecret = Deno.env.get('ABACATEPAY_WEBHOOK_SECRET');
 
@@ -35,16 +36,18 @@ serve(async (req) => {
     }
 
     const payload = await req.json();
-    console.log('Webhook recebido:', JSON.stringify(payload, null, 2));
+    console.log('Evento recebido:', payload.event, 'Billing ID:', payload.data?.billing?.id);
 
     const { event, data, devMode } = payload;
 
     if (event !== 'billing.paid') {
-      console.log('Evento ignorado:', event);
+      console.log('Evento ignorado:', event, '- Aguardando billing.paid');
       return new Response(JSON.stringify({ received: true, ignored: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    
+    console.log('Processando pagamento confirmado...');
 
     // Inicializar cliente Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -78,14 +81,14 @@ serve(async (req) => {
       .single();
 
     if (findError || !order) {
-      console.error('Pedido não encontrado:', billingId, findError);
+      console.error('Pedido não encontrado para billing ID:', billingId, 'Erro:', findError);
       return new Response(JSON.stringify({ error: 'Pedido não encontrado' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Pedido encontrado:', order.id);
+    console.log('Pedido encontrado:', order.id, 'Status atual:', order.status);
 
     // Atualizar status do pedido
     const { error: updateError } = await supabase
@@ -104,7 +107,9 @@ serve(async (req) => {
       throw new Error('Erro ao atualizar pedido');
     }
 
-    console.log('Pedido atualizado com sucesso:', order.id);
+    console.log('=== Pagamento processado com sucesso ===');
+    console.log('Pedido:', order.id, 'atualizado para status: paid');
+    console.log('Valor pago:', payment?.amount || billing?.paidAmount, 'centavos');
 
     return new Response(JSON.stringify({ 
       received: true, 

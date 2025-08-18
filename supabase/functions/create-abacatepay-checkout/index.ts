@@ -15,7 +15,9 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== Iniciando processamento de checkout AbacatePay ===');
     const { items, customer } = await req.json();
+    console.log('Dados recebidos - Items:', items?.length, 'itens, Customer:', customer?.name || 'Anônimo');
     
     const abacatePayApiKey = Deno.env.get('ABACATEPAY_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -48,7 +50,7 @@ serve(async (req) => {
         customer_name: customer?.name || null,
         customer_email: customer?.email || null,
         customer_phone: customer?.phone || null,
-        dev_mode: true, // Ambiente de desenvolvimento
+        dev_mode: Deno.env.get("NODE_ENV") !== "production", // Define dev_mode com base no ambiente
         metadata: { source: 'web_app' }
       })
       .select()
@@ -84,11 +86,20 @@ serve(async (req) => {
     // Preparar dados para AbacatePay
     const description = `Pedido Best Açaí #${order.id.slice(-8)} - ${items.length} ${items.length === 1 ? 'item' : 'itens'}`;
     
+    // URLs de retorno - configurar com URLs reais do domínio
+    const baseUrl = Deno.env.get("SITE_BASE_URL") || "https://43eee186-3009-4f9c-a03d-e342dd5279cf.lovableproject.com";
+    const returnUrl = `${baseUrl}/payment-success`;
+    const cancelUrl = `${baseUrl}/payment-canceled`;
+    
+    console.log('Configurando pagamento - Total:', totalAmount, 'centavos, Ambiente:', Deno.env.get("NODE_ENV") || 'development');
+    
     const abacatePayData = {
       amount: totalAmount,
       description: description,
       frequency: 'ONE_TIME',
-      methods: ['PIX', 'CARD'],
+      methods: ['PIX', 'CARD'], // Verificar se a conta AbacatePay suporta ambos os métodos
+      returnUrl: returnUrl,
+      completionUrl: returnUrl,
       customer: customer ? {
         name: customer.name,
         email: customer.email,
@@ -97,9 +108,10 @@ serve(async (req) => {
       } : undefined
     };
 
-    console.log('Dados para AbacatePay:', abacatePayData);
+    console.log('Dados para AbacatePay:', { ...abacatePayData, customer: customer ? 'Informado' : 'Não informado' });
 
     // Fazer chamada para AbacatePay
+    console.log('Enviando requisição para AbacatePay API...');
     const response = await fetch('https://api.abacatepay.com/v1/billing/create', {
       method: 'POST',
       headers: {
@@ -108,6 +120,8 @@ serve(async (req) => {
       },
       body: JSON.stringify(abacatePayData),
     });
+    
+    console.log('Resposta da AbacatePay recebida - Status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -116,7 +130,11 @@ serve(async (req) => {
     }
 
     const abacatePayResponse = await response.json();
-    console.log('Resposta da AbacatePay:', abacatePayResponse);
+    console.log('Resposta da AbacatePay processada:', { 
+      success: !abacatePayResponse.error, 
+      billingId: abacatePayResponse.data?.id,
+      url: abacatePayResponse.data?.url ? 'URL gerada' : 'URL não encontrada'
+    });
 
     if (abacatePayResponse.error) {
       console.error('Erro retornado pela AbacatePay:', abacatePayResponse.error);
@@ -139,7 +157,9 @@ serve(async (req) => {
       // Não falha aqui pois a cobrança já foi criada
     }
 
-    console.log('Checkout criado com sucesso:', billingData.url);
+    console.log('=== Checkout criado com sucesso ===');
+    console.log('Pedido ID:', order.id, 'AbacatePay ID:', billingData.id);
+    console.log('URL de checkout gerada, redirecionando usuário...');
 
     return new Response(JSON.stringify({ 
       checkoutUrl: billingData.url,
