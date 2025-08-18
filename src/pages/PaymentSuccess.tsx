@@ -9,7 +9,7 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     // Limpar carrinho do localStorage se estiver sendo usado
-    localStorage.removeItem('cart');
+    localStorage.removeItem('bestacai-cart');
   }, []);
 
   return (
