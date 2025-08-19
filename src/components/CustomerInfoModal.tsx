@@ -11,6 +11,10 @@ interface CustomerInfo {
   email: string;
   phone: string;
   cpf: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
 }
 
 interface CustomerInfoModalProps {
@@ -25,17 +29,23 @@ const CustomerInfoModal = ({ isOpen, onClose, onConfirm, isLoading }: CustomerIn
     name: "",
     email: "",
     phone: "",
-    cpf: ""
+    cpf: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: ""
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (customerInfo.name && customerInfo.email && customerInfo.phone && customerInfo.cpf) {
+    if (customerInfo.name && customerInfo.email && customerInfo.phone && customerInfo.cpf && 
+        customerInfo.address && customerInfo.city && customerInfo.state && customerInfo.zipCode) {
       onConfirm(customerInfo);
     }
   };
 
-  const isValid = customerInfo.name && customerInfo.email && customerInfo.phone && customerInfo.cpf;
+  const isValid = customerInfo.name && customerInfo.email && customerInfo.phone && customerInfo.cpf && 
+                  customerInfo.address && customerInfo.city && customerInfo.state && customerInfo.zipCode;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -93,6 +103,51 @@ const CustomerInfoModal = ({ isOpen, onClose, onConfirm, isLoading }: CustomerIn
               placeholder="000.000.000-00"
               value={customerInfo.cpf}
               onChange={(e) => setCustomerInfo(prev => ({ ...prev, cpf: e.target.value }))}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="customer-address">Endereço</Label>
+            <Input
+              id="customer-address"
+              placeholder="Rua, número, complemento"
+              value={customerInfo.address}
+              onChange={(e) => setCustomerInfo(prev => ({ ...prev, address: e.target.value }))}
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
+              <Label htmlFor="customer-city">Cidade</Label>
+              <Input
+                id="customer-city"
+                placeholder="Sua cidade"
+                value={customerInfo.city}
+                onChange={(e) => setCustomerInfo(prev => ({ ...prev, city: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="customer-state">Estado</Label>
+              <Input
+                id="customer-state"
+                placeholder="SP"
+                value={customerInfo.state}
+                onChange={(e) => setCustomerInfo(prev => ({ ...prev, state: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="customer-zipcode">CEP</Label>
+            <Input
+              id="customer-zipcode"
+              placeholder="00000-000"
+              value={customerInfo.zipCode}
+              onChange={(e) => setCustomerInfo(prev => ({ ...prev, zipCode: e.target.value }))}
               required
             />
           </div>
