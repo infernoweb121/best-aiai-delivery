@@ -10,6 +10,7 @@ interface CustomerInfo {
   name: string;
   email: string;
   phone: string;
+  cpf: string;
 }
 
 interface CustomerInfoModalProps {
@@ -23,17 +24,18 @@ const CustomerInfoModal = ({ isOpen, onClose, onConfirm, isLoading }: CustomerIn
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: "",
     email: "",
-    phone: ""
+    phone: "",
+    cpf: ""
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (customerInfo.name && customerInfo.email && customerInfo.phone) {
+    if (customerInfo.name && customerInfo.email && customerInfo.phone && customerInfo.cpf) {
       onConfirm(customerInfo);
     }
   };
 
-  const isValid = customerInfo.name && customerInfo.email && customerInfo.phone;
+  const isValid = customerInfo.name && customerInfo.email && customerInfo.phone && customerInfo.cpf;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -80,6 +82,17 @@ const CustomerInfoModal = ({ isOpen, onClose, onConfirm, isLoading }: CustomerIn
               placeholder="(11) 99999-9999"
               value={customerInfo.phone}
               onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="customer-cpf">CPF</Label>
+            <Input
+              id="customer-cpf"
+              placeholder="000.000.000-00"
+              value={customerInfo.cpf}
+              onChange={(e) => setCustomerInfo(prev => ({ ...prev, cpf: e.target.value }))}
               required
             />
           </div>

@@ -30,7 +30,7 @@ serve(async (req) => {
     console.log('Enviando requisição para verificar pagamento PIX...');
     
     // Check payment status with AbacatePay
-    const response = await fetch(`https://api.abacatepay.com/v1/pixQrCode/check/${pixId}`, {
+    const response = await fetch(`https://api.abacatepay.com/v1/pixQrCode/${pixId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${abacatePayApiKey}`,

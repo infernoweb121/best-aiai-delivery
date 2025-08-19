@@ -117,7 +117,7 @@ serve(async (req) => {
         name: customer?.name || 'Cliente',
         cellphone: customer?.phone || '',
         email: customer?.email || '',
-        taxId: customer?.taxId || customer?.cpf || ''
+        taxId: customer?.cpf || customer?.taxId || ''
       },
       metadata: {
         externalId: order.id,
