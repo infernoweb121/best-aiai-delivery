@@ -227,20 +227,26 @@ const Index = () => {
         throw error;
       }
 
-      if (data?.checkoutUrl) {
-        // Clear cart after successful checkout creation
+      if (data?.pixId && data?.brCode) {
+        // Clear cart after successful PIX creation
         setCartItems([]);
         setShowCustomerModal(false);
         
-        toast({
-          title: "Redirecionando para pagamento",
-          description: "Você será direcionado para completar o pagamento",
-        });
+        // Redirect to PIX payment page with payment data
+        const paymentData = {
+          pixId: data.pixId,
+          brCode: data.brCode,
+          brCodeBase64: data.brCodeBase64,
+          amount: data.amount,
+          orderId: data.orderId,
+          expiresAt: data.expiresAt
+        };
         
-        // Open checkout URL
-        window.open(data.checkoutUrl, '_blank');
+        // Store payment data in sessionStorage and redirect
+        sessionStorage.setItem('pixPaymentData', JSON.stringify(paymentData));
+        window.location.href = '/pagamento/pix';
       } else {
-        throw new Error('URL de checkout não retornada');
+        throw new Error('Dados do PIX não retornados');
       }
     } catch (error) {
       console.error('Erro no checkout:', error);

@@ -12,6 +12,8 @@ import Orders from "./pages/admin/Orders";
 import Settings from "./pages/admin/Settings";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
+import PixPayment from "./pages/PixPayment";
+import PaymentConfirmed from "./pages/PaymentConfirmed";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +47,8 @@ const App = () => (
                 <Settings />
               </ProtectedRoute>
             } />
+            <Route path="/pagamento/pix" element={<PixPayment />} />
+            <Route path="/pagamento/confirmado" element={<PaymentConfirmed />} />
             <Route path="/pagamento/sucesso" element={<PaymentSuccess />} />
             <Route path="/pagamento/cancelado" element={<PaymentCanceled />} />
             <Route path="*" element={<NotFound />} />
