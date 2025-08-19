@@ -108,17 +108,34 @@ serve(async (req) => {
       } : undefined
     };
 
-    console.log('Dados para AbacatePay:', { ...abacatePayData, customer: customer ? 'Informado' : 'Não informado' });
+    // Preparar dados para AbacatePay PIX QR Code
+    const pixPayload = {
+      amount: totalAmount,
+      description: description,
+      expiresIn: 3600, // 1 hora
+      customer: {
+        name: customer?.name || 'Cliente',
+        cellphone: customer?.phone || '',
+        email: customer?.email || '',
+        taxId: customer?.taxId || customer?.cpf || ''
+      },
+      metadata: {
+        externalId: order.id,
+        source: 'web_app'
+      }
+    };
 
-    // Fazer chamada para AbacatePay
-    console.log('Enviando requisição para AbacatePay API...');
-    const response = await fetch('https://api.abacatepay.com/v1/billing/create', {
+    console.log('Dados para AbacatePay PIX:', { ...pixPayload, customer: customer ? 'Informado' : 'Não informado' });
+
+    // Fazer chamada para AbacatePay PIX QR Code
+    console.log('Enviando requisição para AbacatePay PIX API...');
+    const response = await fetch('https://api.abacatepay.com/v1/pixQrCode/create', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${abacatePayApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(abacatePayData),
+      body: JSON.stringify(pixPayload),
     });
     
     console.log('Resposta da AbacatePay recebida - Status:', response.status);
@@ -130,10 +147,11 @@ serve(async (req) => {
     }
 
     const abacatePayResponse = await response.json();
-    console.log('Resposta da AbacatePay processada:', { 
+    console.log('Resposta da AbacatePay PIX processada:', { 
       success: !abacatePayResponse.error, 
-      billingId: abacatePayResponse.data?.id,
-      url: abacatePayResponse.data?.url ? 'URL gerada' : 'URL não encontrada'
+      pixId: abacatePayResponse.data?.id,
+      brCode: abacatePayResponse.data?.brCode ? 'PIX gerado' : 'PIX não gerado',
+      status: abacatePayResponse.data?.status
     });
 
     if (abacatePayResponse.error) {
@@ -141,14 +159,20 @@ serve(async (req) => {
       throw new Error(`AbacatePay: ${abacatePayResponse.error}`);
     }
 
-    const billingData = abacatePayResponse.data;
+    const pixData = abacatePayResponse.data;
 
-    // Atualizar pedido com dados da AbacatePay
+    // Atualizar pedido com dados da AbacatePay PIX
     const { error: updateError } = await supabase
       .from('orders')
       .update({
-        abacatepay_id: billingData.id,
-        abacatepay_url: billingData.url
+        abacatepay_id: pixData.id,
+        payment_method: 'PIX',
+        metadata: { 
+          ...order.metadata, 
+          brCode: pixData.brCode,
+          brCodeBase64: pixData.brCodeBase64,
+          expiresAt: pixData.expiresAt
+        }
       })
       .eq('id', order.id);
 
@@ -157,13 +181,17 @@ serve(async (req) => {
       // Não falha aqui pois a cobrança já foi criada
     }
 
-    console.log('=== Checkout criado com sucesso ===');
-    console.log('Pedido ID:', order.id, 'AbacatePay ID:', billingData.id);
-    console.log('URL de checkout gerada, redirecionando usuário...');
+    console.log('=== PIX QR Code criado com sucesso ===');
+    console.log('Pedido ID:', order.id, 'PIX ID:', pixData.id);
+    console.log('PIX gerado, retornando dados para exibição...');
 
     return new Response(JSON.stringify({ 
-      checkoutUrl: billingData.url,
-      orderId: order.id 
+      pixId: pixData.id,
+      brCode: pixData.brCode,
+      brCodeBase64: pixData.brCodeBase64,
+      amount: pixData.amount,
+      orderId: order.id,
+      expiresAt: pixData.expiresAt
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
