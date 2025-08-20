@@ -57,9 +57,14 @@ export type Database = {
           abacatepay_id: string | null
           abacatepay_url: string | null
           created_at: string
+          customer_address: string | null
+          customer_city: string | null
+          customer_cpf: string | null
           customer_email: string | null
           customer_name: string | null
           customer_phone: string | null
+          customer_state: string | null
+          customer_zipcode: string | null
           dev_mode: boolean | null
           fee: number | null
           id: string
@@ -74,9 +79,14 @@ export type Database = {
           abacatepay_id?: string | null
           abacatepay_url?: string | null
           created_at?: string
+          customer_address?: string | null
+          customer_city?: string | null
+          customer_cpf?: string | null
           customer_email?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          customer_state?: string | null
+          customer_zipcode?: string | null
           dev_mode?: boolean | null
           fee?: number | null
           id?: string
@@ -91,9 +101,14 @@ export type Database = {
           abacatepay_id?: string | null
           abacatepay_url?: string | null
           created_at?: string
+          customer_address?: string | null
+          customer_city?: string | null
+          customer_cpf?: string | null
           customer_email?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          customer_state?: string | null
+          customer_zipcode?: string | null
           dev_mode?: boolean | null
           fee?: number | null
           id?: string

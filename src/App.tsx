@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import Orders from "./pages/admin/Orders";
+import CustomerData from "./pages/admin/CustomerData";
 import Settings from "./pages/admin/Settings";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
@@ -40,6 +41,11 @@ const App = () => (
             <Route path="/admin/orders" element={
               <ProtectedRoute requireAdmin>
                 <Orders />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/customer-data" element={
+              <ProtectedRoute requireAdmin>
+                <CustomerData />
               </ProtectedRoute>
             } />
             <Route path="/admin/settings" element={

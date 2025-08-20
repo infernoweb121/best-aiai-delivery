@@ -45,6 +45,11 @@ const menuItems = [
     icon: ShoppingBag 
   },
   { 
+    title: 'Dados dos Clientes', 
+    url: '/admin/customer-data', 
+    icon: Users 
+  },
+  { 
     title: 'Configurações', 
     url: '/admin/settings', 
     icon: Settings 

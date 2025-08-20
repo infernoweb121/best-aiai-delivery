@@ -256,6 +256,22 @@ export default function Orders() {
                                 <p className="font-medium">{order.customer_phone || 'N/A'}</p>
                               </div>
                               <div>
+                                <p className="text-muted-foreground">CPF</p>
+                                <p className="font-medium">{(order as any).customer_cpf || 'N/A'}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <p className="text-muted-foreground">Endereço</p>
+                                <p className="font-medium">
+                                  {(order as any).customer_address && (order as any).customer_city && (order as any).customer_state 
+                                    ? `${(order as any).customer_address}, ${(order as any).customer_city} - ${(order as any).customer_state}`
+                                    : 'N/A'}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">CEP</p>
+                                <p className="font-medium">{(order as any).customer_zipcode || 'N/A'}</p>
+                              </div>
+                              <div>
                                 <p className="text-muted-foreground">Data do Pedido</p>
                                 <p className="font-medium">
                                   {format(new Date(order.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}

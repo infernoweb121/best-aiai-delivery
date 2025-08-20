@@ -219,7 +219,16 @@ const Index = () => {
             quantity: item.quantity,
             unit_amount: Math.round(item.price * 100), // Converter para centavos
           })),
-          customer: customerInfo
+          customer: {
+            name: customerInfo.name,
+            email: customerInfo.email,
+            phone: customerInfo.phone,
+            cpf: customerInfo.cpf,
+            address: customerInfo.address,
+            city: customerInfo.city,
+            state: customerInfo.state,
+            zipCode: customerInfo.zipCode
+          }
         }
       });
 

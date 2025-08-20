@@ -50,6 +50,11 @@ serve(async (req) => {
         customer_name: customer?.name || null,
         customer_email: customer?.email || null,
         customer_phone: customer?.phone || null,
+        customer_cpf: customer?.cpf || customer?.taxId || null,
+        customer_address: customer?.address || null,
+        customer_city: customer?.city || null,
+        customer_state: customer?.state || null,
+        customer_zipcode: customer?.zipCode || null,
         dev_mode: Deno.env.get("NODE_ENV") !== "production", // Define dev_mode com base no ambiente
         metadata: { source: 'web_app' }
       })
