@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { user, signIn, signUp } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
   const {
@@ -35,10 +37,14 @@ export default function Auth() {
 
   // Redireciona se já está logado
   useEffect(() => {
-    if (user) {
-      navigate('/');
+    if (user && !roleLoading) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, roleLoading, navigate]);
 
   const onSubmit = async (data: AuthForm) => {
     setIsLoading(true);
@@ -51,7 +57,8 @@ export default function Auth() {
       if (!error) {
         reset();
         if (isLogin) {
-          navigate('/');
+          // O redirecionamento será feito pelo useEffect baseado no role
+          return;
         }
       }
     } finally {
