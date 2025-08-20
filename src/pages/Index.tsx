@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, Clock, Star } from "lucide-react";
@@ -32,12 +33,38 @@ const Index = () => {
     { id: "bebidas", name: "Bebidas", icon: "🥤", description: "Refrescantes", color: "accent" },
     { id: "doces", name: "Doces", icon: "🍭", description: "Deliciosos", color: "warning" },
     { id: "promocoes", name: "Promoções", icon: "🔥", description: "Imperdível", color: "destructive" },
+    { id: "outros", name: "Outros", icon: "📦", description: "Diversos", color: "secondary" },
   ];
 
-  const allProducts: Product[] = [
-    // Açaís
+  // Fetch products from database
+  const { data: dbProducts, isLoading: productsLoading } = useQuery({
+    queryKey: ['public-products'],
+    queryFn: async (): Promise<Product[]> => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      return (data || []).map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.price / 100, // Convert from cents
+        image: product.image_url || heroAcai, // Fallback image
+        category: product.category || 'outros',
+        isCustomizable: true, // Default for all products
+        ingredients: [], // Can be expanded in the future
+      }));
+    }
+  });
+
+  // Static fallback products (will be shown if no DB products)
+  const staticProducts: Product[] = [
     {
-      id: "1",
+      id: "static-1",
       name: "Açaí Tradicional",
       description: "Açaí puro e cremoso, a base perfeita para sua sobremesa",
       price: 12.90,
@@ -45,41 +72,9 @@ const Index = () => {
       category: "acai",
       isCustomizable: true,
       ingredients: ["Açaí", "Guaraná natural"],
-      extras: [
-        { name: "Granola", price: 2.00 },
-        { name: "Banana", price: 1.50 },
-        { name: "Morango", price: 2.50 },
-        { name: "Leite condensado", price: 1.00 },
-      ]
     },
     {
-      id: "2",
-      name: "Açaí Premium",
-      description: "Açaí especial com frutas selecionadas e complementos gourmet",
-      price: 18.90,
-      image: heroAcai,
-      category: "acai",
-      isCustomizable: true,
-      ingredients: ["Açaí premium", "Frutas vermelhas", "Granola artesanal"],
-      extras: [
-        { name: "Castanha do Pará", price: 3.00 },
-        { name: "Chocolate 70%", price: 2.50 },
-        { name: "Coco ralado", price: 1.50 },
-      ]
-    },
-    {
-      id: "3",
-      name: "Açaí Fitness",
-      description: "Versão saudável com zero açúcar e proteína",
-      price: 16.90,
-      image: heroAcai,
-      category: "acai",
-      isCustomizable: true,
-      ingredients: ["Açaí zero açúcar", "Whey protein", "Aveia"],
-    },
-    // Sorvetes
-    {
-      id: "4",
+      id: "static-2",
       name: "Sorvete Tropical",
       description: "Mix de sabores tropicais em uma casquinha crocante",
       price: 8.90,
@@ -89,58 +84,18 @@ const Index = () => {
       ingredients: ["Sorvete de manga", "Sorvete de coco", "Casquinha"],
     },
     {
-      id: "5",
-      name: "Sundae Best",
-      description: "Sorvete cremoso com calda especial e chantilly",
-      price: 14.90,
-      image: iceCreamCollection,
-      category: "sorvete",
-      isCustomizable: true,
-      isPromo: true,
-      originalPrice: 18.90,
-      ingredients: ["Sorvete artesanal", "Calda especial", "Chantilly"],
-    },
-    // Bebidas
-    {
-      id: "6",
+      id: "static-3",
       name: "Smoothie Tropical",
       description: "Bebida refrescante com frutas da estação",
       price: 9.90,
       image: tropicalDrinks,
       category: "bebidas",
       ingredients: ["Manga", "Maracujá", "Água de coco"],
-    },
-    {
-      id: "7",
-      name: "Suco Detox",
-      description: "Combinação verde energizante e saudável",
-      price: 11.90,
-      image: tropicalDrinks,
-      category: "bebidas",
-      ingredients: ["Couve", "Limão", "Gengibre", "Maçã verde"],
-    },
-    // Doces
-    {
-      id: "8",
-      name: "Brownie da Casa",
-      description: "Brownie artesanal com chocolate belga",
-      price: 7.90,
-      image: iceCreamCollection,
-      category: "doces",
-      ingredients: ["Chocolate belga", "Nozes", "Açúcar cristal"],
-    },
-    // Promoções
-    {
-      id: "9",
-      name: "Combo Família",
-      description: "2 açaís grandes + 2 bebidas + 1 doce",
-      price: 39.90,
-      originalPrice: 55.90,
-      image: heroAcai,
-      category: "promocoes",
-      isPromo: true,
     }
   ];
+
+  // Use DB products if available, otherwise use static products
+  const allProducts = dbProducts && dbProducts.length > 0 ? dbProducts : staticProducts;
 
   // Load cart from localStorage on mount
   useEffect(() => {

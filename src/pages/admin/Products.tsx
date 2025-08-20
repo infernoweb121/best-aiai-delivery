@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ImageUpload } from '@/components/ImageUpload';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -29,10 +31,19 @@ const productSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().optional(),
   price: z.number().min(0, 'Preço deve ser maior que zero'),
-  category: z.string().optional(),
-  image_url: z.string().url('URL da imagem inválida').optional().or(z.literal('')),
+  category: z.string().min(1, 'Categoria é obrigatória'),
+  image_url: z.string().min(1, 'Imagem é obrigatória'),
   is_active: z.boolean().default(true),
 });
+
+const categories = [
+  { value: 'acai', label: 'Açaí' },
+  { value: 'sorvete', label: 'Sorvetes' },
+  { value: 'bebidas', label: 'Bebidas' },
+  { value: 'doces', label: 'Doces' },
+  { value: 'promocoes', label: 'Promoções' },
+  { value: 'outros', label: 'Outros' },
+];
 
 type ProductForm = z.infer<typeof productSchema>;
 
@@ -59,13 +70,17 @@ export default function Products() {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue
+    setValue,
+    watch
   } = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       is_active: true
     }
   });
+
+  const watchedCategory = watch('category');
+  const watchedImageUrl = watch('image_url');
 
   // Fetch products
   const { data: products, isLoading } = useQuery({
@@ -104,6 +119,7 @@ export default function Products() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['public-products'] });
       toast({ title: 'Produto criado com sucesso!' });
       setIsDialogOpen(false);
       reset();
@@ -136,6 +152,7 @@ export default function Products() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['public-products'] });
       toast({ title: 'Produto atualizado com sucesso!' });
       setIsDialogOpen(false);
       setEditingProduct(null);
@@ -162,6 +179,7 @@ export default function Products() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['public-products'] });
       toast({ title: 'Status do produto atualizado!' });
     },
     onError: (error) => {
@@ -185,6 +203,7 @@ export default function Products() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['public-products'] });
       toast({ title: 'Produto removido com sucesso!' });
     },
     onError: (error) => {
@@ -305,27 +324,38 @@ export default function Products() {
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="category">Categoria</Label>
-                    <Input
-                      id="category"
-                      {...register('category')}
-                      placeholder="Ex: Açaí, Bebidas, Lanches"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="image_url">URL da Imagem</Label>
-                    <Input
-                      id="image_url"
-                      {...register('image_url')}
-                      placeholder="https://exemplo.com/imagem.jpg"
-                    />
-                    {errors.image_url && (
-                      <p className="text-sm text-destructive">{errors.image_url.message}</p>
+                    <Label htmlFor="category">Categoria *</Label>
+                    <Select
+                      value={watchedCategory || ''}
+                      onValueChange={(value) => setValue('category', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.value} value={category.value}>
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.category && (
+                      <p className="text-sm text-destructive">{errors.category.message}</p>
                     )}
                   </div>
+                  
+                  <ImageUpload
+                    value={watchedImageUrl || ''}
+                    onChange={(url) => setValue('image_url', url)}
+                    label="Imagem do Produto *"
+                    placeholder="Cole uma URL ou faça upload da imagem"
+                  />
+                  {errors.image_url && (
+                    <p className="text-sm text-destructive">{errors.image_url.message}</p>
+                  )}
                 </div>
                 
                 <div className="flex items-center space-x-2">

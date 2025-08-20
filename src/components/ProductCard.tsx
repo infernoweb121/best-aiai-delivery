@@ -48,6 +48,10 @@ const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
             src={product.image}
             alt={product.name}
             className="w-full h-48 object-cover transition-smooth group-hover:scale-110"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = 'https://images.unsplash.com/photo-1567206563064-6f60f40a2b57?w=400&h=300&fit=crop&crop=center';
+            }}
           />
           <Button
             variant="ghost"
